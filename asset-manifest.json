@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/MoodScale-Assignment/static/css/main.d1d9cd20.css",
+    "main.js": "/MoodScale-Assignment/static/js/main.d5cdbe40.js",
+    "index.html": "/MoodScale-Assignment/index.html",
+    "main.d1d9cd20.css.map": "/MoodScale-Assignment/static/css/main.d1d9cd20.css.map",
+    "main.d5cdbe40.js.map": "/MoodScale-Assignment/static/js/main.d5cdbe40.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d1d9cd20.css",
+    "static/js/main.d5cdbe40.js"
+  ]
+}
