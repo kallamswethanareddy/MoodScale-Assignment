@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -8,11 +8,11 @@ const Journal = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [entry, setEntry] = useState('');
   const [savedEntries, setSavedEntries] = useState({});
-  const [mood, setMood] = useState(null);
+  const [mood, setMood] = useState('');
   const [track, setTrack] = useState(null);
+  const audioRef = useRef(null);
 
   const location = useLocation();
-  const userId = localStorage.getItem('userId');
   const formatDate = (date) => date.toISOString().split('T')[0];
 
   const moodToSong = {
@@ -28,76 +28,82 @@ const Journal = () => {
     bored: '/songs/thoughtful.mp3',
   };
 
-  // Load saved entries on mount
+  // Load entries and handle homepage mood on first load
   useEffect(() => {
-    if (!userId) return;
-    const stored = localStorage.getItem(`journalEntries_${userId}`);
-    if (stored) {
-      setSavedEntries(JSON.parse(stored));
-    }
-  }, [userId]);
+    const stored = sessionStorage.getItem('journalEntries');
+    const parsed = stored ? JSON.parse(stored) : {};
+    setSavedEntries(parsed);
 
-  // Sync mood & track when navigation state or selected date changes
+    const incomingMood = location.state?.mood?.toLowerCase?.();
+    if (incomingMood && moodToSong[incomingMood]) {
+      const today = formatDate(new Date());
+      const updatedEntries = {
+        ...parsed,
+        [today]: {
+          ...(parsed[today] || {}),
+          text: parsed[today]?.text || '',
+          mood: incomingMood,
+        },
+      };
+      setMood(incomingMood);
+      setTrack({ name: `${incomingMood} Vibes`, file: moodToSong[incomingMood] });
+      setSavedEntries(updatedEntries);
+      sessionStorage.setItem('journalEntries', JSON.stringify(updatedEntries));
+    }
+  }, [location.state]);
+
+  // When date changes, load text and mood, but DO NOT change the song
   useEffect(() => {
     const key = formatDate(selectedDate);
-    const fallbackEntry = savedEntries[key] || {};
-    const navMood = location.state?.mood;
+    const saved = savedEntries[key] || { text: '', mood: '' };
+    setEntry(saved.text);
+    setMood(saved.mood || '');
+    // Don't call setTrack — we don't want to interrupt the song
+  }, [selectedDate, savedEntries]);
 
-    const currentMood = navMood || fallbackEntry.mood || null;
-    const currentText = fallbackEntry.text || '';
-
-    setMood(currentMood);
-    setEntry(currentText);
-
-    if (currentMood) {
-      const moodLower = currentMood.toLowerCase();
-      const songPath = moodToSong[moodLower];
-      setTrack({ name: `${currentMood} Vibes`, file: songPath });
-    } else {
-      setTrack(null);
+  // Play audio when track is changed
+  useEffect(() => {
+    if (audioRef.current && track?.file) {
+      audioRef.current.load();
+      audioRef.current.play().catch((err) => {
+        console.warn('Autoplay blocked:', err);
+      });
     }
-  }, [location.state, savedEntries, selectedDate]);
+  }, [track]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    const key = formatDate(date);
-    const saved = savedEntries[key] || { text: '', mood: null };
-    setEntry(saved.text);
-    setMood(saved.mood);
-
-    if (saved.mood) {
-      const moodLower = saved.mood.toLowerCase();
-      setTrack({ name: `${saved.mood} Vibes`, file: moodToSong[moodLower] });
-    } else {
-      setTrack(null);
-    }
   };
 
   const handleSave = () => {
-    if (!userId) {
-      alert('Please log in to save your journal entries.');
-      return;
-    }
+    const key = formatDate(selectedDate);
+    const newEntry = { text: entry, mood };
+    const updatedEntries = { ...savedEntries, [key]: newEntry };
+    setSavedEntries(updatedEntries);
+    sessionStorage.setItem('journalEntries', JSON.stringify(updatedEntries));
+    alert('Journal entry saved!');
+  };
+
+  const handleMoodChange = (selectedMood) => {
+    setMood(selectedMood);
+    const songPath = moodToSong[selectedMood.toLowerCase()];
+    setTrack({ name: `${selectedMood} Vibes`, file: songPath });
 
     const key = formatDate(selectedDate);
-    const newEntry = {
-      text: entry,
-      mood,
-    };
-
     const updatedEntries = {
       ...savedEntries,
-      [key]: newEntry,
+      [key]: {
+        ...savedEntries[key],
+        text: entry,
+        mood: selectedMood,
+      },
     };
-
     setSavedEntries(updatedEntries);
-    localStorage.setItem(`journalEntries_${userId}`, JSON.stringify(updatedEntries));
-    alert('Journal entry saved!');
+    sessionStorage.setItem('journalEntries', JSON.stringify(updatedEntries));
   };
 
   return (
     <div className="journal-page">
-      {/* Text Area */}
       <div className="journal-entry">
         <textarea
           placeholder="Write about your day..."
@@ -106,7 +112,6 @@ const Journal = () => {
         />
       </div>
 
-      {/* Calendar & Save Button */}
       <div className="journal-calendar">
         <Calendar
           onChange={handleDateChange}
@@ -121,19 +126,69 @@ const Journal = () => {
           Save Entry
         </button>
 
-        {/* Audio Player */}
-        {track?.file && (
-          <div className="track-list" style={{ marginTop: '20px' }}>
-            <h4>Now playing for: "{mood?.charAt(0).toUpperCase() + mood?.slice(1)}"</h4>
-            <div className="track-bar">
-              <span className="track-text">{track.name}</span>
-              <audio controls style={{ width: '100%', marginTop: '10px' }}>
+        <div className="track-list" style={{ marginTop: '20px' }}>
+          <h4>
+            {track?.name
+              ? `Now playing: "${track.name}"`
+              : 'No mood selected for this date'}
+          </h4>
+
+          <div className="track-bar">
+            {track?.file ? (
+              <audio
+                ref={audioRef}
+                controls
+                style={{ width: '100%', marginTop: '10px' }}
+              >
                 <source src={track.file} type="audio/mpeg" />
-                Your browser does not support the audio tag.
+                Your browser does not support the audio element.
               </audio>
-            </div>
+            ) : (
+              <div
+                style={{
+                  marginTop: '10px',
+                  fontStyle: 'italic',
+                  color: '#888',
+                }}
+              >
+                No track loaded
+              </div>
+            )}
           </div>
-        )}
+
+          <div style={{ marginTop: '15px' }}>
+            <label
+              htmlFor="moodSelector"
+              style={{ fontWeight: 'bold', color: '#4a148c' }}
+            >
+              Change Mood 🎧:
+            </label>
+            <select
+              id="moodSelector"
+              value={mood}
+              onChange={(e) => handleMoodChange(e.target.value)}
+              style={{
+                marginLeft: '10px',
+                padding: '8px 12px',
+                borderRadius: '12px',
+                border: '1px solid #ccc',
+                fontSize: '1rem',
+              }}
+            >
+              <option value="">-- Select Mood --</option>
+              <option value="happy">😊 Happy</option>
+              <option value="sad">😢 Sad</option>
+              <option value="angry">😠 Angry</option>
+              <option value="anxious">😰 Anxious</option>
+              <option value="calm">😌 Calm</option>
+              <option value="energetic">💥 Energetic</option>
+              <option value="tired">🥱 Tired</option>
+              <option value="romantic">😍 Romantic</option>
+              <option value="confident">😎 Confident</option>
+              <option value="bored">😐 Bored</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );

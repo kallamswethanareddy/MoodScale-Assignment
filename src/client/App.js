@@ -5,7 +5,6 @@ import {
   Route,
   useNavigate,
   Link,
-  Navigate
 } from 'react-router-dom';
 
 import '../styles/App.css';
@@ -35,7 +34,7 @@ const Home = () => {
     navigate('/journal', {
       state: {
         mood,
-        song: `/songs/${fileName}.mp3`, // Make sure files exist in public/songs
+        song: `/songs/${fileName}.mp3`, // Ensure files exist in /public/songs
       },
     });
   };
@@ -65,6 +64,12 @@ const Home = () => {
           </div>
         ))}
       </div>
+      <div className="journal-button-wrapper">
+  <Link to="/journal" className="journal-big-button">
+    ✍️ Go to Journal without Music
+  </Link>
+</div>
+
     </div>
   );
 };
@@ -76,18 +81,17 @@ function App() {
       <div className="App">
         <Mood />
 
-        {/* Navigation Bar */}
+        {/* Navigation Bar without icons */}
         <nav style={{ textAlign: 'center', marginBottom: '10px' }}>
-          <Link to="/" style={{ margin: '0 15px' }}>🏠 Home</Link>
-          <Link to="/journal" style={{ margin: '0 15px' }}>📓 Journal</Link>
+          <Link to="/" style={{ margin: '0 15px' }}>Home</Link>
+          <Link to="/journal" style={{ margin: '0 15px' }}>Journal</Link>
         </nav>
 
         {/* Routes */}
         <Routes>
-  <Route path="/" element={<Home />} />           {/* Home is the root */}
-  <Route path="/journal" element={<Journal />} /> {/* Journal */}
-</Routes>
-
+          <Route path="/" element={<Home />} />
+          <Route path="/journal" element={<Journal />} />
+        </Routes>
       </div>
     </Router>
   );
