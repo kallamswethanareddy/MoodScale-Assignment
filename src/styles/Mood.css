@@ -1,0 +1,120 @@
+.top-bar {
+  height: 60px; /* or your desired height */
+  width: 100%;
+  background-color: #000080;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+
+
+
+.left-section {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.balls {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 15px;
+}
+
+.ball {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: bounce 1s infinite alternate;
+}
+
+.ball:nth-child(1) { background-color: #ffb347; animation-delay: 0s; }
+.ball:nth-child(2) { background-color: #77dd77; animation-delay: 0.2s; }
+.ball:nth-child(3) { background-color: #87ceeb; animation-delay: 0.4s; }
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-6px); }
+}
+
+.home-icon {
+  color: #FFD700; /* bright gold */
+  font-size: 1.6rem;
+  text-decoration: none;
+  transition: transform 0.2s ease, color 0.3s ease;
+}
+
+.home-icon:hover {
+  transform: scale(1.25);
+  color: #fffacd; /* lighter gold on hover */
+}
+
+.right-icons {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.icon-link {
+  color: #FFD700; /* consistent gold */
+  font-size: 1.6rem;
+  text-decoration: none;
+  transition: transform 0.2s ease, color 0.3s ease;
+}
+
+.icon-link:hover {
+  transform: scale(1.25);
+  color: #fffacd; /* soft highlight on hover */
+}
+
+.top-bar h1 {
+  color: white;
+  font-size: 1.7rem;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: bold;
+  background: linear-gradient(90deg, #f9d423, #ff4e50, #a18cd1, #fbc2eb);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: glitter 3s linear infinite;
+}
+
+@keyframes glitter {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+.center-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.journal-link {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 16px;
+  margin: 0 20px;
+}
+
+.journal-link:hover {
+  text-decoration: underline;
+}

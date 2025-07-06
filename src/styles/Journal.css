@@ -1,0 +1,55 @@
+.journal-page {
+  display: flex;
+  height: calc(100vh - 60px); /* adjust if you have a topbar */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* LEFT SIDE: Text Entry */
+.journal-entry {
+  flex: 3;
+  padding-right: 10px
+}
+
+.journal-entry textarea {
+  width: 100%;
+  height: 100%;
+  padding: 30px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  resize: none;
+  box-sizing: border-box;
+}
+
+/* RIGHT SIDE: Calendar + Save Button */
+.journal-calendar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 20px;
+}
+
+/* calendar component styling if needed */
+.journal-calendar .calendar-wrapper {
+  width: 100%;
+}
+
+/* Save Button */
+.save-button {
+  background-color: #4a148c;
+  color: white;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 8px;
+  width: 100%; /* match calendar width */
+  box-sizing: border-box;
+}
+
+.save-button:hover {
+  background-color: #6a1b9a;
+}
